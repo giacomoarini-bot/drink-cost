@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0D0D0D" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Drink Cost" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+<link rel="icon" href="./favicon.png" />
+<title>Drink Cost Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body,#root { height:100%; }
+  body { margin:0; background:#0D0D0D; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .font-editorial { font-family:'Playfair Display',serif; }
+  .tabular-nums { font-variant-numeric:tabular-nums; }
+  .glass-surface { background:rgba(244,244,240,0.03); border:1px solid rgba(244,244,240,0.10); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .glass-surface-solid { background:#141414; border:1px solid rgba(244,244,240,0.10); }
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:#0D0D0D; }
+  ::-webkit-scrollbar-thumb { background:#333; border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:#E31B23; }
+  input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type="number"] { -moz-appearance:textfield; }
+  input[type="range"] { -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:#262626; outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:#E31B23; cursor:pointer; box-shadow:0 2px 8px rgba(227,27,35,0.5); border:2.5px solid #F4F4F0; }
+  input[type="range"]::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:#E31B23; cursor:pointer; border:2.5px solid #F4F4F0; box-shadow:0 2px 8px rgba(227,27,35,0.5); }
+  button { -webkit-tap-highlight-color:transparent; }
+  * { -webkit-user-select:none; user-select:none; }
+  input,textarea { -webkit-user-select:text; user-select:text; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>const ICON_SVG = {
+  Plus: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />",
+  Wine: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M8 22h8\" /> <path d=\"M7 10h10\" /> <path d=\"M12 15v7\" /> <path d=\"M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z\" />",
+  Clock: "<!-- @license lucide-static v1.22.0 - ISC --> <circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 6v6l4 2\" />",
+  Search: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"m21 21-4.34-4.34\" /> <circle cx=\"11\" cy=\"11\" r=\"8\" />",
+  Trash2: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />",
+  Droplets: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z\" /> <path d=\"M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97\" />",
+  Beaker: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M4.5 3h15\" /> <path d=\"M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3\" /> <path d=\"M6 14h12\" />",
+  Citrus: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M21.66 17.67a1.08 1.08 0 0 1-.04 1.6A12 12 0 0 1 4.73 2.38a1.1 1.1 0 0 1 1.61-.04z\" /> <path d=\"M19.65 15.66A8 8 0 0 1 8.35 4.34\" /> <path d=\"m14 10-5.5 5.5\" /> <path d=\"M14 17.85V10H6.15\" />",
+  Sparkles: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" /> <path d=\"M20 2v4\" /> <path d=\"M22 4h-4\" /> <circle cx=\"4\" cy=\"20\" r=\"2\" />",
+  Leaf: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z\" /> <path d=\"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12\" />",
+  Candy: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M10 7v10.9\" /> <path d=\"M14 6.1V17\" /> <path d=\"M16 7V3a1 1 0 0 1 1.707-.707 2.5 2.5 0 0 0 2.152.717 1 1 0 0 1 1.131 1.131 2.5 2.5 0 0 0 .717 2.152A1 1 0 0 1 21 8h-4\" /> <path d=\"M16.536 7.465a5 5 0 0 0-7.072 0l-2 2a5 5 0 0 0 0 7.07 5 5 0 0 0 7.072 0l2-2a5 5 0 0 0 0-7.07\" /> <path d=\"M8 17v4a1 1 0 0 1-1.707.707 2.5 2.5 0 0 0-2.152-.717 1 1 0 0 1-1.131-1.131 2.5 2.5 0 0 0-.717-2.152A1 1 0 0 1 3 16h4\" />",
+  FlaskConical: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2\" /> <path d=\"M6.453 15h11.094\" /> <path d=\"M8.5 2h7\" />",
+  ChevronDown: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"m6 9 6 6 6-6\" />",
+  ChevronUp: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"m18 15-6-6-6 6\" />",
+  Pencil: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />",
+  AlertCircle: "<!-- @license lucide-static v1.22.0 - ISC --> <circle cx=\"12\" cy=\"12\" r=\"10\" /> <line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" /> <line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" />",
+  TrendingUp: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M16 7h6v6\" /> <path d=\"m22 7-8.5 8.5-5-5L2 17\" />",
+  Euro: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M4 10h12\" /> <path d=\"M4 14h9\" /> <path d=\"M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2\" />",
+  Percent: "<!-- @license lucide-static v1.22.0 - ISC --> <line x1=\"19\" x2=\"5\" y1=\"5\" y2=\"19\" /> <circle cx=\"6.5\" cy=\"6.5\" r=\"2.5\" /> <circle cx=\"17.5\" cy=\"17.5\" r=\"2.5\" />",
+  AlertTriangle: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" /> <path d=\"M12 9v4\" /> <path d=\"M12 17h.01\" />",
+  PieChart: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z\" /> <path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\" />",
+  Target: "<!-- @license lucide-static v1.22.0 - ISC --> <circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />",
+  Receipt: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M12 17V7\" /> <path d=\"M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8\" /> <path d=\"M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z\" />",
+  X: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />",
+  Minus: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M5 12h14\" />",
+  Check: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M20 6 9 17l-5-5\" />",
+  ListPlus: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M16 5H3\" /> <path d=\"M11 12H3\" /> <path d=\"M16 19H3\" /> <path d=\"M18 9v6\" /> <path d=\"M21 12h-6\" />",
+  SlidersHorizontal: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"M10 5H3\" /> <path d=\"M12 19H3\" /> <path d=\"M14 3v4\" /> <path d=\"M16 17v4\" /> <path d=\"M21 12h-9\" /> <path d=\"M21 19h-5\" /> <path d=\"M21 5h-7\" /> <path d=\"M8 10v4\" /> <path d=\"M8 12H3\" />",
+  CupSoda: "<!-- @license lucide-static v1.22.0 - ISC --> <path d=\"m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8\" /> <path d=\"M5 8h14\" /> <path d=\"M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0\" /> <path d=\"m12 8 1-6h2\" />",
+  Hash: "<!-- @license lucide-static v1.22.0 - ISC --> <line x1=\"4\" x2=\"20\" y1=\"9\" y2=\"9\" /> <line x1=\"4\" x2=\"20\" y1=\"15\" y2=\"15\" /> <line x1=\"10\" x2=\"8\" y1=\"3\" y2=\"21\" /> <line x1=\"16\" x2=\"14\" y1=\"3\" y2=\"21\" />"
+};</script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useRef } = React;
+
+/* ---------- Icon component ---------- */
+function Icon({ name, className, style, strokeWidth }) {
+  const inner = ICON_SVG[name] || "";
+  return React.createElement("svg", {
+    className, style,
+    width: "1em", height: "1em", viewBox: "0 0 24 24", fill: "none",
+    stroke: "currentColor", strokeWidth: strokeWidth || 2, strokeLinecap: "round", strokeLinejoin: "round",
+    dangerouslySetInnerHTML: { __html: inner },
+  });
+}
+const mkIcon = (name) => (props) => <Icon name={name} {...props} />;
+const Plus=mkIcon("Plus"), Wine=mkIcon("Wine"), Clock=mkIcon("Clock"), Search=mkIcon("Search"),
+  Trash2=mkIcon("Trash2"), Droplets=mkIcon("Droplets"), Beaker=mkIcon("Beaker"), Citrus=mkIcon("Citrus"),
+  Sparkles=mkIcon("Sparkles"), Leaf=mkIcon("Leaf"), Candy=mkIcon("Candy"), FlaskConical=mkIcon("FlaskConical"),
+  ChevronDown=mkIcon("ChevronDown"), ChevronUp=mkIcon("ChevronUp"), Pencil=mkIcon("Pencil"),
+  AlertCircle=mkIcon("AlertCircle"), TrendingUp=mkIcon("TrendingUp"), Euro=mkIcon("Euro"),
+  Percent=mkIcon("Percent"), AlertTriangle=mkIcon("AlertTriangle"), PieIcon=mkIcon("PieChart"),
+  Target=mkIcon("Target"), Receipt=mkIcon("Receipt"), X=mkIcon("X"), Minus=mkIcon("Minus"),
+  Check=mkIcon("Check"), ListPlus=mkIcon("ListPlus"), SlidersHorizontal=mkIcon("SlidersHorizontal"),
+  CupSoda=mkIcon("CupSoda"), Hash=mkIcon("Hash");
+
+/* ---------- Constants ---------- */
+const INGREDIENT_TYPE_LABELS = { spirit:'Spirit', liqueur:'Liquore', mixer:'Mixer', garnish:'Guarnizione', bitter:'Bitter', syrup:'Sciroppo', juice:'Succo', accessory:'Accessori', other:'Altro' };
+const INGREDIENT_TYPE_COLORS = { spirit:'#E31B23', liqueur:'#D4A574', mixer:'#34D399', garnish:'#FBBF24', bitter:'#8B5CF6', syrup:'#F472B6', juice:'#F97316', accessory:'#38BDF8', other:'#9CA3AF' };
+const PIE_COLORS = ['#E31B23','#D4A574','#34D399','#FBBF24','#8B5CF6','#F472B6','#F97316','#9CA3AF'];
+const INGREDIENT_TYPES = ['spirit','liqueur','bitter','juice','syrup','mixer','garnish','accessory','other'];
+const BOTTLE_PRESETS = [50,100,200,375,500,700,750,1000,1500];
+const TYPE_ICONS = { spirit:<Wine className="w-3.5 h-3.5"/>, liqueur:<FlaskConical className="w-3.5 h-3.5"/>, mixer:<Droplets className="w-3.5 h-3.5"/>, garnish:<Leaf className="w-3.5 h-3.5"/>, bitter:<Sparkles className="w-3.5 h-3.5"/>, syrup:<Candy className="w-3.5 h-3.5"/>, juice:<Citrus className="w-3.5 h-3.5"/>, accessory:<CupSoda className="w-3.5 h-3.5"/>, other:<Beaker className="w-3.5 h-3.5"/> };
+
+const now = () => new Date().toISOString();
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+const costFromBottle = (p,ml) => ml>0 ? p/(ml/1000) : 0;
+
+// --- Unit helpers ---
+// ingredient.unit: 'volume' (cl/ml) | 'piece' (al pezzo)
+const isPiece = (ing) => ing && ing.unit === 'piece';
+// cost of a single recipe item given its ingredient
+function itemCost(ing, item) {
+  if (!ing) return 0;
+  if (isPiece(ing)) return (item.pieces || 0) * (ing.costPerPiece || 0);
+  return ((item.volumeCl || 0) / 100) * (ing.costPerLiter || 0);
+}
+// default amount when adding an ingredient to a recipe
+const defaultAmount = (ing) => isPiece(ing) ? 1 : 4.5;
+// step size for +/- controls
+const stepSize = (ing) => isPiece(ing) ? 1 : 0.5;
+// human label for an item amount
+function amountLabel(ing, item) {
+  if (isPiece(ing)) { const n = item.pieces || 0; return `${n} pz`; }
+  return `${(item.volumeCl || 0).toFixed(1)} cl`;
+}
+// unit price label for an ingredient
+function unitPriceLabel(ing) {
+  return isPiece(ing) ? `€${(ing.costPerPiece||0).toFixed(2)}/pz` : `€${(ing.costPerLiter||0).toFixed(2)}/L`;
+}
+const STORAGE_KEY = 'mixology-maestro-v2';
+
+/* ---------- Supabase sync config ---------- */
+const SUPABASE_URL = 'https://euqojcxczzfupokoryqy.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SCsWBiWSXR_lA2mE1DrYRQ_s_AJDZ6I';
+const WORKSPACE_ID = 'ws_b9b51012638789fc67ef8cfa64b21f1e';
+const CLIENT_ID = (() => {
+  try { let c = localStorage.getItem('dcd-client-id'); if (!c) { c = 'cli_' + Math.random().toString(36).slice(2,10); localStorage.setItem('dcd-client-id', c); } return c; }
+  catch(e){ return 'cli_' + Math.random().toString(36).slice(2,10); }
+})();
+const sb = (window.supabase && SUPABASE_URL) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
+
+
+/* ---------- Seed ---------- */
+const DEFAULT_INGREDIENTS = [
+  { id:'ing-1', name:'Gin London Dry', type:'spirit', priceMode:'bottle', bottleSizeMl:700, bottlePrice:12.95, costPerLiter:costFromBottle(12.95,700), stock:1000, createdAt:now() },
+  { id:'ing-2', name:'Vodka Premium', type:'spirit', priceMode:'bottle', bottleSizeMl:1000, bottlePrice:15.0, costPerLiter:15.0, stock:1000, createdAt:now() },
+  { id:'ing-3', name:'Rum Bianco', type:'spirit', priceMode:'bottle', bottleSizeMl:1000, bottlePrice:12.0, costPerLiter:12.0, stock:1000, createdAt:now() },
+  { id:'ing-4', name:'Rum Scuro', type:'spirit', priceMode:'bottle', bottleSizeMl:700, bottlePrice:15.4, costPerLiter:costFromBottle(15.4,700), stock:1000, createdAt:now() },
+  { id:'ing-5', name:'Tequila Blanco', type:'spirit', priceMode:'bottle', bottleSizeMl:700, bottlePrice:19.6, costPerLiter:costFromBottle(19.6,700), stock:1000, createdAt:now() },
+  { id:'ing-6', name:'Whiskey Bourbon', type:'spirit', priceMode:'bottle', bottleSizeMl:700, bottlePrice:17.5, costPerLiter:costFromBottle(17.5,700), stock:1000, createdAt:now() },
+  { id:'ing-7', name:'Triple Sec', type:'liqueur', priceMode:'bottle', bottleSizeMl:700, bottlePrice:9.8, costPerLiter:costFromBottle(9.8,700), stock:1000, createdAt:now() },
+  { id:'ing-8', name:'Vermouth Rosso', type:'liqueur', priceMode:'bottle', bottleSizeMl:1000, bottlePrice:10.0, costPerLiter:10.0, stock:1000, createdAt:now() },
+  { id:'ing-9', name:'Campari', type:'bitter', priceMode:'bottle', bottleSizeMl:700, bottlePrice:11.55, costPerLiter:costFromBottle(11.55,700), stock:1000, createdAt:now() },
+  { id:'ing-10', name:'Aperol', type:'bitter', priceMode:'bottle', bottleSizeMl:700, bottlePrice:9.1, costPerLiter:costFromBottle(9.1,700), stock:1000, createdAt:now() },
+  { id:'ing-11', name:'Succo Limone', type:'juice', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:4.5, stock:2000, createdAt:now() },
+  { id:'ing-12', name:'Succo Lime', type:'juice', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:5.0, stock:2000, createdAt:now() },
+  { id:'ing-13', name:'Sciroppo Zucchero', type:'syrup', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:3.5, stock:2000, createdAt:now() },
+  { id:'ing-14', name:'Acqua Tonica', type:'mixer', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:2.5, stock:3000, createdAt:now() },
+  { id:'ing-15', name:'Soda', type:'mixer', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:1.5, stock:3000, createdAt:now() },
+  { id:'ing-16', name:'Coca Cola', type:'mixer', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:2.0, stock:3000, createdAt:now() },
+  { id:'ing-17', name:'Scorza Limone', type:'garnish', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:8.0, stock:500, createdAt:now() },
+  { id:'ing-18', name:'Oliva', type:'garnish', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:12.0, stock:500, createdAt:now() },
+  { id:'ing-19', name:'Menta Fresca', type:'garnish', priceMode:'liter', bottleSizeMl:null, bottlePrice:null, costPerLiter:15.0, stock:500, createdAt:now() },
+  { id:'ing-20', name:'Cannuccia', type:'accessory', unit:'piece', pieceMode:'pack', packPrice:3.5, piecesPerPack:250, costPerPiece:3.5/250, stock:250, createdAt:now() },
+  { id:'ing-21', name:'Tovagliolo', type:'accessory', unit:'piece', pieceMode:'pack', packPrice:2.2, piecesPerPack:200, costPerPiece:2.2/200, stock:200, createdAt:now() },
+  { id:'ing-22', name:'Fetta di Limone', type:'garnish', unit:'piece', pieceMode:'each', costPerPiece:0.08, stock:100, createdAt:now() },
+];
+const DEFAULT_COCKTAILS = [
+  { id:'c-1', name:'Negroni', description:"Classico cocktail italiano, perfetto per l'aperitivo", recipeItems:[
+    { ingredientId:'ing-1', volumeCl:3.0, calculatedCost:(3/100)*costFromBottle(12.95,700) },
+    { ingredientId:'ing-9', volumeCl:3.0, calculatedCost:(3/100)*costFromBottle(11.55,700) },
+    { ingredientId:'ing-8', volumeCl:3.0, calculatedCost:0.30 } ], profitMargin:150, vatRate:22, createdAt:now(), updatedAt:now() },
+  { id:'c-2', name:'Mojito', description:'Rinfrescante cocktail cubano con menta e lime', recipeItems:[
+    { ingredientId:'ing-3', volumeCl:5.0, calculatedCost:0.60 },
+    { ingredientId:'ing-12', volumeCl:2.5, calculatedCost:0.13 },
+    { ingredientId:'ing-13', volumeCl:2.0, calculatedCost:0.07 },
+    { ingredientId:'ing-15', volumeCl:3.0, calculatedCost:0.05 },
+    { ingredientId:'ing-19', volumeCl:1.0, calculatedCost:0.15 } ], profitMargin:130, vatRate:22, createdAt:now(), updatedAt:now() },
+  { id:'c-3', name:'Margarita', description:'Il re dei cocktail messicani', recipeItems:[
+    { ingredientId:'ing-5', volumeCl:5.0, calculatedCost:(5/100)*costFromBottle(19.6,700) },
+    { ingredientId:'ing-7', volumeCl:2.5, calculatedCost:(2.5/100)*costFromBottle(9.8,700) },
+    { ingredientId:'ing-12', volumeCl:2.0, calculatedCost:0.10 } ], profitMargin:140, vatRate:22, createdAt:now(), updatedAt:now() },
+];
+const DEFAULT_SETTINGS = { defaultProfitMargin:120, defaultVatRate:22 };
+
+/* ---------- Store with localStorage ---------- */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const p = JSON.parse(raw); return { ingredients:p.ingredients||DEFAULT_INGREDIENTS, cocktails:p.cocktails||DEFAULT_COCKTAILS, selectedCocktailId:p.selectedCocktailId||'c-1' }; }
+  } catch(e){}
+  return { ingredients:DEFAULT_INGREDIENTS, cocktails:DEFAULT_COCKTAILS, selectedCocktailId:'c-1' };
+}
+
+function useCocktailStore() {
+  const initial = loadState();
+  const [ingredients, setIngredients] = useState(initial.ingredients);
+  const [cocktails, setCocktails] = useState(initial.cocktails);
+  const [settings] = useState(DEFAULT_SETTINGS);
+  const [selectedCocktailId, setSelectedCocktailId] = useState(initial.selectedCocktailId);
+  const [syncStatus, setSyncStatus] = useState(sb ? 'connecting' : 'local'); // connecting|synced|syncing|offline|local
+  const applyingRemote = useRef(false);   // true while applying a remote change (prevents echo push)
+  const hydrated = useRef(false);          // becomes true after first remote load
+  const pushTimer = useRef(null);
+
+  // Persist to localStorage (instant cache) on every change
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ingredients, cocktails, selectedCocktailId })); } catch(e){}
+  }, [ingredients, cocktails, selectedCocktailId]);
+
+  // Push to Supabase (debounced), skipping the initial load and remote-applied changes
+  useEffect(() => {
+    if (!sb) return;
+    if (!hydrated.current) return;      // don't push until we've loaded remote once
+    if (applyingRemote.current) return; // don't echo a change we just received
+    setSyncStatus('syncing');
+    if (pushTimer.current) clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(async () => {
+      try {
+        const { error } = await sb.from('drink_cost_state').upsert({
+          id: WORKSPACE_ID,
+          data: { ingredients, cocktails, selectedCocktailId },
+          client_id: CLIENT_ID,
+          updated_at: new Date().toISOString(),
+        });
+        setSyncStatus(error ? 'offline' : 'synced');
+      } catch(e) { setSyncStatus('offline'); }
+    }, 600);
+  }, [ingredients, cocktails, selectedCocktailId]);
+
+  // Initial remote load + realtime subscription
+  useEffect(() => {
+    if (!sb) return;
+    let channel;
+    (async () => {
+      try {
+        const { data, error } = await sb.from('drink_cost_state').select('data').eq('id', WORKSPACE_ID).maybeSingle();
+        if (!error && data && data.data && data.data.ingredients) {
+          applyingRemote.current = true;
+          setIngredients(data.data.ingredients);
+          setCocktails(data.data.cocktails);
+          if (data.data.selectedCocktailId) setSelectedCocktailId(data.data.selectedCocktailId);
+          setTimeout(() => { applyingRemote.current = false; }, 0);
+          setSyncStatus('synced');
+        } else {
+          // no remote row yet -> seed it from current local/default state
+          await sb.from('drink_cost_state').upsert({
+            id: WORKSPACE_ID,
+            data: { ingredients, cocktails, selectedCocktailId },
+            client_id: CLIENT_ID,
+            updated_at: new Date().toISOString(),
+          });
+          setSyncStatus('synced');
+        }
+      } catch(e) { setSyncStatus('offline'); }
+      hydrated.current = true;
+
+      channel = sb.channel('dcd-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'drink_cost_state', filter: `id=eq.${WORKSPACE_ID}` },
+          (payload) => {
+            const row = payload.new;
+            if (!row || !row.data) return;
+            if (row.client_id === CLIENT_ID) return; // ignore our own writes
+            applyingRemote.current = true;
+            if (row.data.ingredients) setIngredients(row.data.ingredients);
+            if (row.data.cocktails) setCocktails(row.data.cocktails);
+            if (row.data.selectedCocktailId) setSelectedCocktailId(row.data.selectedCocktailId);
+            setSyncStatus('synced');
+            setTimeout(() => { applyingRemote.current = false; }, 0);
+          })
+        .subscribe();
+    })();
+    return () => { if (channel) sb.removeChannel(channel); };
+  }, []);
+
+  const addIngredient = useCallback((ing) => { const id=`ing-${uid()}`; setIngredients(s=>[...s,{...ing,id,createdAt:now()}]); return id; }, []);
+  const updateIngredient = useCallback((id, updates) => {
+    setIngredients(prev=>{
+      const nextIngs=prev.map(i=>i.id===id?{...i,...updates}:i);
+      const merged=nextIngs.find(i=>i.id===id);
+      setCocktails(cs=>cs.map(c=>({...c, recipeItems:c.recipeItems.map(r=>
+        r.ingredientId===id ? {...r, calculatedCost:itemCost(merged,r)} : r )})));
+      return nextIngs;
+    });
+  }, []);
+  const deleteIngredient = useCallback((id) => {
+    setIngredients(s=>s.filter(i=>i.id!==id));
+    setCocktails(s=>s.map(c=>({...c, recipeItems:c.recipeItems.filter(r=>r.ingredientId!==id)})));
+  }, []);
+  const addCocktail = useCallback((c) => { const id=`c-${uid()}`; setCocktails(s=>[...s,{...c,id,createdAt:now(),updatedAt:now()}]); setSelectedCocktailId(id); return id; }, []);
+  const updateCocktail = useCallback((id, updates) => { setCocktails(s=>s.map(c=>c.id===id?{...c,...updates,updatedAt:now()}:c)); }, []);
+  const deleteCocktail = useCallback((id) => { setCocktails(s=>s.filter(c=>c.id!==id)); setSelectedCocktailId(cur=>cur===id?null:cur); }, []);
+
+  const addRecipeItem = useCallback((cocktailId, ingredientId, amount) => {
+    setIngredients(ings=>{ const ing=ings.find(i=>i.id===ingredientId);
+      if (ing) {
+        const piece=isPiece(ing);
+        const amt = amount!=null ? amount : defaultAmount(ing);
+        setCocktails(cs=>cs.map(c=>{
+          if (c.id!==cocktailId) return c;
+          const ex=c.recipeItems.find(r=>r.ingredientId===ingredientId);
+          if (ex) {
+            const nv = piece ? {pieces:(ex.pieces||0)+amt} : {volumeCl:(ex.volumeCl||0)+amt};
+            const nextItem={...ex,...nv}; nextItem.calculatedCost=itemCost(ing,nextItem);
+            return {...c,updatedAt:now(),recipeItems:c.recipeItems.map(r=>r.ingredientId===ingredientId?nextItem:r)};
+          }
+          const base = piece ? {ingredientId,pieces:amt} : {ingredientId,volumeCl:amt};
+          base.calculatedCost=itemCost(ing,base);
+          return {...c,updatedAt:now(),recipeItems:[...c.recipeItems,base]};
+        }));
+      }
+      return ings; });
+  }, []);
+  const updateRecipeItem = useCallback((cocktailId, ingredientId, amount) => {
+    setIngredients(ings=>{ const ing=ings.find(i=>i.id===ingredientId);
+      if (ing) { const piece=isPiece(ing);
+        setCocktails(cs=>cs.map(c=>c.id===cocktailId?{...c,updatedAt:now(),recipeItems:c.recipeItems.map(r=>{
+          if (r.ingredientId!==ingredientId) return r;
+          const nv = piece ? {pieces:amount} : {volumeCl:amount};
+          const nextItem={...r,...nv}; nextItem.calculatedCost=itemCost(ing,nextItem); return nextItem;
+        })}:c));
+      }
+      return ings; });
+  }, []);
+  const removeRecipeItem = useCallback((cocktailId, ingredientId) => { setCocktails(cs=>cs.map(c=>c.id===cocktailId?{...c,updatedAt:now(),recipeItems:c.recipeItems.filter(r=>r.ingredientId!==ingredientId)}:c)); }, []);
+
+  const calculateCocktailCost = useCallback((cocktailId) => {
+    const c=cocktails.find(x=>x.id===cocktailId); if(!c) return {totalCost:0,totalVolume:0,totalPieces:0,portions:1};
+    let tc=0,tv=0,tp=0; c.recipeItems.forEach(it=>{ tc+=it.calculatedCost||0; tv+=it.volumeCl||0; tp+=it.pieces||0; });
+    return {totalCost:tc,totalVolume:tv,totalPieces:tp,portions:1};
+  }, [cocktails]);
+  const calculatePricing = useCallback((cocktailId) => {
+    const c=cocktails.find(x=>x.id===cocktailId); if(!c) return {costPerPortion:0,targetPrice:0,finalPrice:0,marginWarning:false};
+    const {totalCost}=calculateCocktailCost(cocktailId); const cpp=totalCost;
+    const tp=cpp*(1+c.profitMargin/100); const fp=tp*(1+c.vatRate/100);
+    return {costPerPortion:cpp,targetPrice:tp,finalPrice:fp,marginWarning:c.profitMargin<100};
+  }, [cocktails, calculateCocktailCost]);
+
+  const resetAll = useCallback(() => {
+    if (confirm('Ripristinare tutti i dati di default? Perderai le tue modifiche su tutti i dispositivi.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      setIngredients(DEFAULT_INGREDIENTS); setCocktails(DEFAULT_COCKTAILS); setSelectedCocktailId('c-1');
+    }
+  }, []);
+
+  return { ingredients, cocktails, settings, selectedCocktailId, syncStatus, setSelectedCocktailId, addIngredient, updateIngredient, deleteIngredient, addCocktail, updateCocktail, deleteCocktail, addRecipeItem, updateRecipeItem, removeRecipeItem, calculateCocktailCost, calculatePricing, resetAll };
+}
+
+/* ---------- Liquid background ---------- */
+function LiquidBackground() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext('2d'); if(!ctx) return;
+    let raf,t=0;
+    const resize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;}; resize();
+    window.addEventListener('resize',resize);
+    const blobs=[{phase:0,speed:0.002,radius:0.6},{phase:2.1,speed:0.0015,radius:0.5},{phase:4.2,speed:0.001,radius:0.7}];
+    const animate=()=>{ t+=1; ctx.clearRect(0,0,canvas.width,canvas.height); ctx.globalCompositeOperation='screen';
+      blobs.forEach(b=>{ const x=canvas.width*(0.5+0.3*Math.sin(t*b.speed+b.phase)); const y=canvas.height*(0.5+0.2*Math.sin(t*b.speed*1.3+b.phase));
+        const r=Math.min(canvas.width,canvas.height)*b.radius; const g=ctx.createRadialGradient(x,y,0,x,y,r);
+        g.addColorStop(0,'rgba(227,27,35,0.04)'); g.addColorStop(0.5,'rgba(227,27,35,0.02)'); g.addColorStop(1,'rgba(227,27,35,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height); });
+      raf=requestAnimationFrame(animate); };
+    animate();
+    return ()=>{ window.removeEventListener('resize',resize); cancelAnimationFrame(raf); };
+  }, []);
+  return <canvas ref={ref} style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',zIndex:0,pointerEvents:'none'}} />;
+}
+
+/* ---------- Top Nav ---------- */
+function SyncBadge({ status }) {
+  const map = {
+    connecting: { c:'#FBBF24', t:'Connessione…' },
+    syncing:    { c:'#FBBF24', t:'Sync…' },
+    synced:     { c:'#34D399', t:'Sincronizzato' },
+    offline:    { c:'#E31B23', t:'Offline' },
+    local:      { c:'#A8A29E', t:'Solo locale' },
+  };
+  const s = map[status] || map.local;
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background:'rgba(244,244,240,0.05)' }}>
+      <span className="w-2 h-2 rounded-full" style={{ backgroundColor:s.c, boxShadow:`0 0 6px ${s.c}` }} />
+      <span className="text-[11px] font-medium text-[#A8A29E] hidden sm:inline">{s.t}</span>
+    </div>
+  );
+}
+
+function TopNavigation({ onNewDrink, syncStatus }) {
+  const [time,setTime]=useState('');
+  useEffect(()=>{ const up=()=>setTime(new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})); up(); const i=setInterval(up,1000); return ()=>clearInterval(i); },[]);
+  return (
+    <nav className="fixed top-0 left-0 right-0 h-16 lg:h-20 z-50 flex items-center justify-between px-4 lg:px-10"
+      style={{background:'linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, rgba(13,13,13,0.85) 65%, transparent 100%)'}}>
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Wine className="w-6 h-6 lg:w-7 lg:h-7 text-[#E31B23] shrink-0" />
+        <h1 className="font-editorial text-lg lg:text-3xl italic text-[#F4F4F0] tracking-wide truncate">Drink Cost Dashboard</h1>
+      </div>
+      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+        <SyncBadge status={syncStatus} />
+        <button onClick={onNewDrink} className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-95 transition-all duration-150">
+          <Plus className="w-4 h-4" /><span>Nuovo Drink</span>
+        </button>
+        <div className="hidden lg:flex items-center gap-1.5 text-[#A8A29E]">
+          <Clock className="w-4 h-4" /><span className="text-sm font-mono tabular-nums">{time}</span>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ---------- Bottom Tab Bar ---------- */
+function BottomTabBar({ active, onChange, onQuickAdd }) {
+  const tabs=[{id:'inventory',label:'Inventario',icon:Wine},{id:'builder',label:'Drink',icon:FlaskConical},{id:'analysis',label:'Analisi',icon:PieIcon}];
+  return (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-1" style={{paddingBottom:'max(0.75rem, env(safe-area-inset-bottom))'}}>
+      <div className="flex items-center gap-1 rounded-[28px] px-2 py-2" style={{background:'rgba(20,20,20,0.85)',backdropFilter:'blur(20px)',border:'1px solid rgba(244,244,240,0.08)',boxShadow:'0 8px 30px rgba(0,0,0,0.4)'}}>
+        {tabs.map(t=>{ const Ic=t.icon; const a=active===t.id;
+          return (
+            <button key={t.id} onClick={()=>onChange(t.id)} className="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-3xl transition-all duration-200" style={{minHeight:48}}>
+              <Ic className="w-5 h-5" style={{color:a?'#E31B23':'#A8A29E'}} />
+              <span className="text-[10px] font-medium" style={{color:a?'#F4F4F0':'#A8A29E'}}>{t.label}</span>
+            </button>
+          ); })}
+        <button onClick={onQuickAdd} className="w-12 h-12 rounded-full bg-[#E31B23] text-white flex items-center justify-center shrink-0 active:scale-90 transition-transform duration-150" style={{boxShadow:'0 4px 16px rgba(227,27,35,0.4)'}}>
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Segmented({ options, value, onChange }) {
+  return (
+    <div className="flex p-1 rounded-2xl bg-white/[0.05] border border-white/[0.06]">
+      {options.map(o=>(
+        <button key={o.value} type="button" onClick={()=>onChange(o.value)} className="flex-1 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+          style={{background:value===o.value?'#E31B23':'transparent',color:value===o.value?'#fff':'#A8A29E'}}>{o.label}</button>
+      ))}
+    </div>
+  );
+}
+
+function IngredientRow({ ing, onTap, onEdit, onDelete, trailing }) {
+  return (
+    <div onClick={onTap} className="group flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-150 active:bg-white/[0.06] hover:bg-white/[0.05]" style={{minHeight:60}}>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{backgroundColor:`${INGREDIENT_TYPE_COLORS[ing.type]}22`,color:INGREDIENT_TYPE_COLORS[ing.type]}}>{TYPE_ICONS[ing.type]}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-[#F4F4F0] truncate">{ing.name}</p>
+        <p className="text-xs text-[#A8A29E]">{INGREDIENT_TYPE_LABELS[ing.type]} · {unitPriceLabel(ing)}{ing.priceMode==='bottle'&&ing.bottleSizeMl?` · bott. ${ing.bottleSizeMl}ml €${ing.bottlePrice?.toFixed(2)}`:''}{isPiece(ing)&&ing.pieceMode==='pack'&&ing.piecesPerPack?` · conf. ${ing.piecesPerPack}pz €${ing.packPrice?.toFixed(2)}`:''}</p>
+      </div>
+      {trailing || (
+        <div className="flex items-center gap-0.5 shrink-0">
+          {onEdit && <button onClick={e=>{e.stopPropagation();onEdit(ing);}} className="p-2 rounded-xl text-[#A8A29E] hover:text-[#F4F4F0] hover:bg-white/[0.08] transition-all" style={{minWidth:36,minHeight:36}}><Pencil className="w-3.5 h-3.5" /></button>}
+          {onDelete && <button onClick={e=>{e.stopPropagation();if(confirm(`Eliminare ${ing.name}?`))onDelete(ing.id);}} className="p-2 rounded-xl text-[#A8A29E] hover:text-[#E31B23] hover:bg-[#E31B23]/10 transition-all" style={{minWidth:36,minHeight:36}}><Trash2 className="w-3.5 h-3.5" /></button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }) {
+  return <button onClick={onClick} className="px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0" style={{background:active?'#E31B23':'rgba(244,244,240,0.05)',color:active?'#fff':'#A8A29E'}}>{children}</button>;
+}
+
+function IngredientPanel({ store, onAddIngredient, onEditIngredient }) {
+  const { ingredients, selectedCocktailId, addRecipeItem, deleteIngredient } = store;
+  const [searchTerm,setSearchTerm]=useState(''); const [filterType,setFilterType]=useState('all');
+  const filtered=ingredients.filter(ing=>{ const s=ing.name.toLowerCase().includes(searchTerm.toLowerCase()); const t=filterType==='all'||ing.type===filterType; return s&&t; });
+  const handleAdd=(id)=>{ if(!selectedCocktailId){alert('Seleziona prima un cocktail nella tab Drink!');return;} addRecipeItem(selectedCocktailId,id); };
+  return (
+    <div className="glass-surface rounded-3xl h-full flex flex-col overflow-hidden">
+      <div className="p-4 lg:p-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-lg font-semibold text-[#F4F4F0] flex items-center gap-2"><Wine className="w-5 h-5 text-[#E31B23]" />Inventario</h2>
+          <button onClick={onAddIngredient} className="w-10 h-10 rounded-full bg-[#E31B23] text-white hover:bg-[#c41820] transition-colors flex items-center justify-center active:scale-90"><Plus className="w-4 h-4" /></button>
+        </div>
+        <div className="relative mb-3">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A8A29E]" />
+          <input type="text" placeholder="Cerca ingrediente..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)}
+            className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl pl-10 pr-4 py-3 text-sm text-[#F4F4F0] placeholder-[#A8A29E] focus:outline-none focus:border-[#E31B23] transition-all" />
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <FilterChip active={filterType==='all'} onClick={()=>setFilterType('all')}>Tutti</FilterChip>
+          {INGREDIENT_TYPES.map(t=><FilterChip key={t} active={filterType===t} onClick={()=>setFilterType(t)}>{INGREDIENT_TYPE_LABELS[t]}</FilterChip>)}
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2.5 space-y-1">
+        {filtered.map(ing=><IngredientRow key={ing.id} ing={ing} onTap={()=>handleAdd(ing.id)} onEdit={onEditIngredient} onDelete={deleteIngredient} />)}
+        {filtered.length===0 && <div className="text-center py-10"><Beaker className="w-10 h-10 text-[#A8A29E] mx-auto mb-3 opacity-40" /><p className="text-sm text-[#A8A29E]">Nessun ingrediente trovato</p></div>}
+      </div>
+      {selectedCocktailId && <div className="px-4 py-2.5 border-t border-white/[0.06] text-center"><p className="text-xs text-[#A8A29E]">Tocca un ingrediente per aggiungerlo al drink selezionato</p></div>}
+    </div>
+  );
+}
+
+function CocktailList({ store, onNewCocktail }) {
+  const { cocktails, selectedCocktailId, setSelectedCocktailId, calculatePricing, calculateCocktailCost } = store;
+  return (
+    <div className="glass-surface rounded-3xl overflow-hidden">
+      <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#F4F4F0] flex items-center gap-2"><Wine className="w-4 h-4 text-[#E31B23]" />I Tuoi Drink</h3>
+        <button onClick={onNewCocktail} className="p-2 rounded-full text-[#A8A29E] hover:text-[#E31B23] hover:bg-[#E31B23]/10 transition-all"><Plus className="w-4 h-4" /></button>
+      </div>
+      <div className="max-h-[220px] overflow-y-auto p-2 space-y-1">
+        {cocktails.map(c=>{ const sel=c.id===selectedCocktailId; const p=calculatePricing(c.id); const cd=calculateCocktailCost(c.id);
+          return (
+            <button key={c.id} onClick={()=>setSelectedCocktailId(c.id)} className="w-full text-left p-3 rounded-2xl transition-all duration-150"
+              style={{background:sel?'rgba(227,27,35,0.15)':'transparent',border:sel?'1px solid rgba(227,27,35,0.3)':'1px solid transparent',minHeight:56}}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{color:sel?'#E31B23':'#F4F4F0'}}>{c.name}</p>
+                  <p className="text-xs text-[#A8A29E]">{c.recipeItems.length} ingredienti · {cd.totalVolume.toFixed(1)} cl</p>
+                </div>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="text-sm font-semibold text-[#F4F4F0] tabular-nums">€{p.finalPrice.toFixed(2)}</p>
+                  <p className="text-xs text-[#34D399] tabular-nums">+{c.profitMargin}%</p>
+                </div>
+              </div>
+            </button>
+          ); })}
+        {cocktails.length===0 && <div className="text-center py-6"><Wine className="w-8 h-8 text-[#A8A29E] mx-auto mb-2 opacity-30" /><p className="text-xs text-[#A8A29E]">Nessun cocktail</p></div>}
+      </div>
+    </div>
+  );
+}
+
+function GlassVisualizer({ store, recipeItems, totalVolume }) {
+  const { ingredients } = store;
+  const maxVolume=Math.max(totalVolume,15); const fillPct=Math.min((totalVolume/maxVolume)*100,100); const y=120-(fillPct/100)*90-10;
+  return (
+    <div className="relative w-28 h-36 lg:w-32 lg:h-40">
+      <svg viewBox="0 0 100 120" className="w-full h-full" style={{filter:'drop-shadow(0 0 8px rgba(227,27,35,0.15))'}}>
+        <defs>
+          <clipPath id="glass-clip"><path d="M10 30 Q10 80 25 90 L25 100 L15 105 L15 110 L85 110 L85 105 L75 100 L75 90 Q90 80 90 30 Z" /></clipPath>
+          <linearGradient id="liquid-gradient" x1="0" y1="1" x2="0" y2="0">
+            {recipeItems.map((item,i)=>{ const ing=ingredients.find(g=>g.id===item.ingredientId); if(!ing||totalVolume===0||isPiece(ing)) return null;
+              const offset=recipeItems.slice(0,i).reduce((s,r)=>s+(r.volumeCl||0),0)/totalVolume;
+              return <stop key={item.ingredientId} offset={`${offset*fillPct}%`} stopColor={INGREDIENT_TYPE_COLORS[ing.type]} />; })}
+            <stop offset="100%" stopColor="#E31B23" />
+          </linearGradient>
+        </defs>
+        <g clipPath="url(#glass-clip)">
+          <rect x="0" y={`${y}`} width="100" height="100" fill="url(#liquid-gradient)" opacity="0.7">
+            <animate attributeName="y" from="120" to={`${y}`} dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1" />
+          </rect>
+          <line x1="10" y1={`${y}`} x2="90" y2={`${y}`} stroke="rgba(244,244,240,0.3)" strokeWidth="0.5" />
+        </g>
+        <path d="M10 30 Q10 80 25 90 L25 100 L15 105 L15 110 L85 110 L85 105 L75 100 L75 90 Q90 80 90 30 Z" fill="none" stroke="rgba(244,244,240,0.15)" strokeWidth="1.5" />
+        <line x1="20" y1="50" x2="30" y2="50" stroke="rgba(244,244,240,0.1)" strokeWidth="0.5" />
+        <line x1="20" y1="65" x2="30" y2="65" stroke="rgba(244,244,240,0.1)" strokeWidth="0.5" />
+        <line x1="20" y1="80" x2="30" y2="80" stroke="rgba(244,244,240,0.1)" strokeWidth="0.5" />
+      </svg>
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-center"><span className="text-xs text-[#A8A29E] font-mono">{totalVolume.toFixed(1)} cl</span></div>
+    </div>
+  );
+}
+
+function Stat({ color, label }) {
+  return <div className="flex items-center gap-2 text-xs text-[#A8A29E]"><div className="w-2 h-2 rounded-full" style={{backgroundColor:color}} /><span>{label}</span></div>;
+}
+
+function CocktailBuilder({ store, onNewCocktail, onEditCocktail }) {
+  const { cocktails, selectedCocktailId, ingredients, updateRecipeItem, removeRecipeItem, deleteCocktail, calculateCocktailCost } = store;
+  const [expandedItem,setExpandedItem]=useState(null);
+  const selected=cocktails.find(c=>c.id===selectedCocktailId);
+  const costData=selectedCocktailId?calculateCocktailCost(selectedCocktailId):{totalCost:0,totalVolume:0};
+  const step=(id,delta)=>{ const item=selected.recipeItems.find(r=>r.ingredientId===id); if(!item)return; const ing=ingredients.find(i=>i.id===id);
+    if (isPiece(ing)) { updateRecipeItem(selected.id,id,Math.max(1,Math.round((item.pieces||0)+delta))); }
+    else { updateRecipeItem(selected.id,id,Math.max(0.5,+((item.volumeCl||0)+delta).toFixed(1))); } };
+  if (!selected) return (
+    <div className="glass-surface rounded-3xl h-full flex items-center justify-center">
+      <div className="text-center px-6">
+        <Wine className="w-16 h-16 text-[#A8A29E] mx-auto mb-4 opacity-30" />
+        <p className="text-lg text-[#A8A29E] font-editorial italic">Seleziona un cocktail</p>
+        <p className="text-sm text-[#A8A29E] mt-1 opacity-60">o creane uno nuovo</p>
+        <button onClick={onNewCocktail} className="mt-5 px-6 py-3 rounded-full text-sm font-medium bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-95 transition-all" style={{minHeight:44}}>Crea il tuo primo drink</button>
+      </div>
+    </div>
+  );
+  return (
+    <div className="glass-surface rounded-3xl h-full flex flex-col overflow-hidden">
+      <div className="p-4 lg:p-6 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl lg:text-2xl font-semibold text-[#F4F4F0] font-editorial truncate">{selected.name}</h2>
+            {selected.description && <p className="text-sm text-[#A8A29E] mt-1 truncate">{selected.description}</p>}
+          </div>
+          <div className="flex items-center gap-1 ml-3 shrink-0">
+            <button onClick={()=>onEditCocktail(selected.id)} className="p-2.5 rounded-full text-[#A8A29E] hover:text-[#F4F4F0] hover:bg-white/[0.06] transition-all" style={{minWidth:44,minHeight:44}}><Pencil className="w-4 h-4 mx-auto" /></button>
+            <button onClick={()=>{if(confirm(`Eliminare "${selected.name}"?`))deleteCocktail(selected.id);}} className="p-2.5 rounded-full text-[#A8A29E] hover:text-[#E31B23] hover:bg-[#E31B23]/10 transition-all" style={{minWidth:44,minHeight:44}}><Trash2 className="w-4 h-4 mx-auto" /></button>
+          </div>
+        </div>
+        <div className="flex gap-4 mt-4 flex-wrap">
+          <Stat color="#34D399" label={`${selected.recipeItems.length} ingredienti`} />
+          <Stat color="#D4A574" label={`Volume: ${costData.totalVolume.toFixed(1)} cl`} />
+          <Stat color="#E31B23" label={`Costo: €${costData.totalCost.toFixed(2)}`} />
+        </div>
+      </div>
+      <div className="px-6 py-4 flex justify-center"><GlassVisualizer store={store} recipeItems={selected.recipeItems} totalVolume={costData.totalVolume} /></div>
+      <div className="flex-1 overflow-y-auto px-3 lg:px-4 pb-4">
+        {selected.recipeItems.map(item=>{ const ing=ingredients.find(i=>i.id===item.ingredientId); if(!ing)return null;
+          const piece=isPiece(ing);
+          const isExp=expandedItem===item.ingredientId; const pct=(!piece&&costData.totalVolume>0)?((item.volumeCl||0)/costData.totalVolume)*100:0;
+          return (
+            <div key={item.ingredientId} className="mb-2">
+              <div onClick={()=>setExpandedItem(isExp?null:item.ingredientId)} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-150 border"
+                style={{background:isExp?'rgba(244,244,240,0.06)':'transparent',borderColor:isExp?'rgba(227,27,35,0.2)':'transparent',minHeight:60}}>
+                <div className="w-3 h-3 rounded-full shrink-0" style={{backgroundColor:INGREDIENT_TYPE_COLORS[ing.type]}} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#F4F4F0] truncate">{ing.name}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#A8A29E]">{INGREDIENT_TYPE_LABELS[ing.type]}</span>
+                    {piece
+                      ? <span className="text-xs text-[#38BDF8] flex items-center gap-1"><Hash className="w-3 h-3" />al pezzo</span>
+                      : <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{width:`${pct}%`,backgroundColor:INGREDIENT_TYPE_COLORS[ing.type]}} /></div>}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold text-[#F4F4F0] tabular-nums">{amountLabel(ing,item)}</p>
+                  <p className="text-xs text-[#34D399] tabular-nums">€{(item.calculatedCost||0).toFixed(2)}</p>
+                </div>
+                {isExp?<ChevronUp className="w-4 h-4 text-[#A8A29E] shrink-0" />:<ChevronDown className="w-4 h-4 text-[#A8A29E] shrink-0" />}
+              </div>
+              {isExp && (
+                <div className="px-3 pb-3 pt-2">
+                  <div className="flex items-center justify-center gap-4">
+                    <button onClick={e=>{e.stopPropagation();step(item.ingredientId,-stepSize(ing));}} className="w-11 h-11 rounded-full bg-white/[0.08] text-[#F4F4F0] flex items-center justify-center active:scale-90 transition-transform"><Minus className="w-4 h-4" /></button>
+                    <div className="text-center min-w-[80px]">
+                      <p className="text-lg font-semibold text-[#F4F4F0] tabular-nums">{amountLabel(ing,item)}</p>
+                      <p className="text-[11px] text-[#A8A29E]">{piece?'pezzi':`${((item.volumeCl||0)*10).toFixed(0)} ml`}</p>
+                    </div>
+                    <button onClick={e=>{e.stopPropagation();step(item.ingredientId,stepSize(ing));}} className="w-11 h-11 rounded-full bg-white/[0.08] text-[#F4F4F0] flex items-center justify-center active:scale-90 transition-transform"><Plus className="w-4 h-4" /></button>
+                    <button onClick={e=>{e.stopPropagation();removeRecipeItem(selected.id,item.ingredientId);}} className="w-11 h-11 rounded-full text-[#A8A29E] hover:text-[#E31B23] hover:bg-[#E31B23]/10 flex items-center justify-center transition-all ml-auto"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-white/[0.06] flex justify-between text-xs text-[#A8A29E]">
+                    <span>{piece?`Costo/pz: €${(ing.costPerPiece||0).toFixed(2)}`:`Costo/L: €${(ing.costPerLiter||0).toFixed(2)}`}</span>
+                    <span>Costo totale: €{(item.calculatedCost||0).toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ); })}
+        {selected.recipeItems.length===0 && (
+          <div className="text-center py-8">
+            <AlertCircle className="w-10 h-10 text-[#A8A29E] mx-auto mb-3 opacity-40" />
+            <p className="text-sm text-[#A8A29E]">Nessun ingrediente ancora</p>
+            <button onClick={()=>onEditCocktail(selected.id)} className="mt-3 px-4 py-2.5 rounded-full text-sm font-medium bg-white/[0.08] text-[#F4F4F0] hover:bg-white/[0.12] transition-all inline-flex items-center gap-2"><ListPlus className="w-4 h-4" />Aggiungi ingredienti</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return <div className="flex justify-between text-xs"><span className="text-[#A8A29E]">{label}</span><span className="text-[#F4F4F0] tabular-nums">{value}</span></div>;
+}
+function MetricCard({ icon, label, value, color, warning }) {
+  return (
+    <div className="p-3.5 rounded-2xl bg-white/[0.03] border" style={{borderColor:warning?'rgba(251,191,36,0.3)':'rgba(244,244,240,0.06)'}}>
+      <div className="flex items-center gap-1.5 mb-1.5" style={{color}}>{icon}<span className="text-xs font-medium">{label}</span></div>
+      <p className="text-lg font-bold tabular-nums" style={{color:warning?'#FBBF24':'#F4F4F0'}}>{value}</p>
+    </div>
+  );
+}
+
+/* ---------- Custom SVG Donut ---------- */
+function Donut({ data, size=160, thickness=26 }) {
+  const total=data.reduce((s,d)=>s+d.value,0);
+  const r=(size-thickness)/2; const cx=size/2, cy=size/2; const C=2*Math.PI*r;
+  let acc=0;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(244,244,240,0.06)" strokeWidth={thickness} />
+      {total>0 && data.map((d,i)=>{ const frac=d.value/total; const dash=frac*C; const off=acc*C; acc+=frac;
+        return <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={d.color} strokeWidth={thickness}
+          strokeDasharray={`${dash} ${C-dash}`} strokeDashoffset={-off} transform={`rotate(-90 ${cx} ${cy})`} strokeLinecap="butt" />; })}
+    </svg>
+  );
+}
+
+function CostAnalysis({ store }) {
+  const { cocktails, selectedCocktailId, ingredients, updateCocktail, calculateCocktailCost, calculatePricing } = store;
+  const selected=cocktails.find(c=>c.id===selectedCocktailId);
+  if (!selected) return (
+    <div className="glass-surface rounded-3xl h-full flex items-center justify-center">
+      <div className="text-center px-6"><PieIcon className="w-12 h-12 text-[#A8A29E] mx-auto mb-3 opacity-30" /><p className="text-sm text-[#A8A29E]">Seleziona un cocktail per vedere l'analisi</p></div>
+    </div>
+  );
+  const costData=calculateCocktailCost(selected.id); const pricing=calculatePricing(selected.id); const mw=pricing.marginWarning;
+  const pieData=selected.recipeItems.map((item,i)=>{ const ing=ingredients.find(g=>g.id===item.ingredientId); return {name:ing?.name||'Sconosciuto',value:item.calculatedCost,color:PIE_COLORS[i%PIE_COLORS.length]}; });
+  const setMargin=(v)=>updateCocktail(selected.id,{profitMargin:Math.max(0,Math.min(500,v))});
+  const setVat=(v)=>updateCocktail(selected.id,{vatRate:Math.max(0,Math.min(100,v))});
+  return (
+    <div className="glass-surface rounded-3xl h-full flex flex-col overflow-hidden">
+      <div className="p-4 lg:p-5 border-b border-white/[0.06]"><h2 className="text-lg font-semibold text-[#F4F4F0] flex items-center gap-2"><TrendingUp className="w-5 h-5 text-[#E31B23]" />Analisi Costi</h2></div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <MetricCard icon={<Receipt className="w-4 h-4" />} label="Costo Totale" value={`€${costData.totalCost.toFixed(2)}`} color="#E31B23" />
+          <MetricCard icon={<Euro className="w-4 h-4" />} label="Costo/Drink" value={`€${pricing.costPerPortion.toFixed(2)}`} color="#D4A574" />
+          <MetricCard icon={<Target className="w-4 h-4" />} label="Prezzo Netto" value={`€${pricing.targetPrice.toFixed(2)}`} color="#34D399" />
+          <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="Prezzo Finale (IVA)" value={`€${pricing.finalPrice.toFixed(2)}`} color="#FBBF24" warning={mw} />
+        </div>
+        {mw && (
+          <div className="p-3.5 rounded-2xl bg-[#FBBF24]/[0.08] border border-[#FBBF24]/20 flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-[#FBBF24] shrink-0 mt-0.5" />
+            <div><p className="text-xs font-medium text-[#FBBF24]">Margine basso</p><p className="text-xs text-[#A8A29E] mt-0.5">Il margine di guadagno è inferiore al 100%. Considera di aumentarlo.</p></div>
+          </div>
+        )}
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+          <div className="flex items-center justify-between mb-3"><label className="text-sm font-medium text-[#F4F4F0] flex items-center gap-2"><Percent className="w-4 h-4 text-[#E31B23]" />Margine di Guadagno</label><span className="text-sm font-semibold tabular-nums" style={{color:mw?'#FBBF24':'#34D399'}}>{selected.profitMargin}%</span></div>
+          <input type="range" min="0" max="500" step="5" value={selected.profitMargin} onChange={e=>setMargin(parseInt(e.target.value))} className="w-full" />
+          <div className="flex justify-between text-xs text-[#A8A29E] mt-1"><span>0%</span><span>250%</span><span>500%</span></div>
+          <div className="mt-2.5 flex items-center gap-2"><input type="number" min="0" max="500" value={selected.profitMargin} onChange={e=>setMargin(parseInt(e.target.value)||0)} className="w-20 bg-white/[0.06] border border-white/10 rounded-xl px-2 py-2 text-sm text-[#F4F4F0] text-center focus:outline-none focus:border-[#E31B23] tabular-nums" /><span className="text-xs text-[#A8A29E]">%</span></div>
+        </div>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+          <div className="flex items-center justify-between mb-3"><label className="text-sm font-medium text-[#F4F4F0] flex items-center gap-2"><Receipt className="w-4 h-4 text-[#8B5CF6]" />Aliquota IVA</label><span className="text-sm font-semibold text-[#8B5CF6] tabular-nums">{selected.vatRate}%</span></div>
+          <input type="range" min="0" max="50" step="1" value={selected.vatRate} onChange={e=>setVat(parseInt(e.target.value))} className="w-full" />
+          <div className="flex justify-between text-xs text-[#A8A29E] mt-1"><span>0%</span><span>22%</span><span>50%</span></div>
+        </div>
+        {pieData.length>0 && (
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+            <h3 className="text-sm font-medium text-[#F4F4F0] mb-3">Composizione Costi</h3>
+            <div className="flex justify-center py-2"><Donut data={pieData} /></div>
+            <div className="mt-2 space-y-1.5">
+              {pieData.map(item=>{ const p=costData.totalCost>0?(item.value/costData.totalCost)*100:0;
+                return (
+                  <div key={item.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor:item.color}} /><span className="text-[#F4F4F0] truncate max-w-[120px]">{item.name}</span></div>
+                    <div className="flex items-center gap-2"><span className="text-[#A8A29E] tabular-nums">{p.toFixed(1)}%</span><span className="text-[#A8A29E] tabular-nums">€{item.value.toFixed(2)}</span></div>
+                  </div>
+                ); })}
+            </div>
+          </div>
+        )}
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
+          <h3 className="text-sm font-medium text-[#F4F4F0] mb-2">Riepilogo</h3>
+          <Row label="Volume totale" value={`${costData.totalVolume.toFixed(1)} cl`} />
+          <Row label="Ingredienti" value={selected.recipeItems.length} />
+          <Row label="Costo per ml" value={`€${costData.totalVolume>0?(costData.totalCost/(costData.totalVolume*10)).toFixed(4):'0.0000'}`} />
+          <div className="border-t border-white/[0.06] pt-2 mt-2"><div className="flex justify-between text-xs"><span className="text-[#A8A29E]">Guadagno netto/drink</span><span className="text-[#34D399] font-medium tabular-nums">€{(pricing.targetPrice-pricing.costPerPortion).toFixed(2)}</span></div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Sheet ---------- */
+function Sheet({ open, onClose, children, title, icon, footer, wide }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{backgroundColor:'rgba(0,0,0,0.6)',backdropFilter:'blur(2px)'}} onClick={onClose}>
+      <div className={`glass-surface-solid w-full ${wide?'sm:max-w-lg':'sm:max-w-md'} rounded-t-[28px] sm:rounded-[28px] overflow-hidden flex flex-col`} style={{maxHeight:'92vh'}} onClick={e=>e.stopPropagation()}>
+        <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0"><div className="w-9 h-1 rounded-full bg-white/20" /></div>
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06] shrink-0">
+          <h3 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2">{icon}{title}</h3>
+          <button onClick={onClose} className="w-9 h-9 rounded-full text-[#A8A29E] hover:text-[#F4F4F0] hover:bg-white/[0.08] flex items-center justify-center transition-all"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="overflow-y-auto flex-1">{children}</div>
+        {footer && <div className="p-4 border-t border-white/[0.06] shrink-0" style={{paddingBottom:'max(1rem, env(safe-area-inset-bottom))'}}>{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+const inputCls="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl px-4 py-3 text-[15px] text-[#F4F4F0] placeholder-[#A8A29E]/50 focus:outline-none focus:border-[#E31B23] transition-all";
+function Field({ label, children }) { return <div><label className="block text-sm font-medium text-[#A8A29E] mb-1.5">{label}</label>{children}</div>; }
+
+function IngredientSheet({ open, onClose, onSave, editing }) {
+  const [name,setName]=useState(''); const [type,setType]=useState('spirit');
+  const [unit,setUnit]=useState('volume'); // volume | piece
+  const [priceMode,setPriceMode]=useState('bottle'); // bottle | liter (volume)
+  const [bottleSizeMl,setBottleSizeMl]=useState(700); const [customBottle,setCustomBottle]=useState(''); const [bottlePrice,setBottlePrice]=useState(''); const [costPerLiter,setCostPerLiter]=useState('');
+  const [pieceMode,setPieceMode]=useState('each'); // each | pack (piece)
+  const [costPerPiece,setCostPerPiece]=useState(''); const [packPrice,setPackPrice]=useState(''); const [piecesPerPack,setPiecesPerPack]=useState('');
+  useEffect(()=>{ if(!open)return;
+    if(editing){ setName(editing.name); setType(editing.type); setUnit(editing.unit||'volume');
+      setPriceMode(editing.priceMode||'liter'); setBottleSizeMl(editing.bottleSizeMl||700);
+      setCustomBottle(BOTTLE_PRESETS.includes(editing.bottleSizeMl)?'':String(editing.bottleSizeMl||'')); setBottlePrice(editing.bottlePrice!=null?String(editing.bottlePrice):''); setCostPerLiter(editing.costPerLiter!=null?String(editing.costPerLiter):'');
+      setPieceMode(editing.pieceMode||'each'); setCostPerPiece(editing.costPerPiece!=null?String(editing.costPerPiece):''); setPackPrice(editing.packPrice!=null?String(editing.packPrice):''); setPiecesPerPack(editing.piecesPerPack!=null?String(editing.piecesPerPack):''); }
+    else { setName(''); setType('spirit'); setUnit('volume'); setPriceMode('bottle'); setBottleSizeMl(700); setCustomBottle(''); setBottlePrice(''); setCostPerLiter('');
+      setPieceMode('each'); setCostPerPiece(''); setPackPrice(''); setPiecesPerPack(''); }
+  }, [open, editing]);
+  const effSize=customBottle?parseFloat(customBottle):bottleSizeMl;
+  const derivedL=priceMode==='bottle'?costFromBottle(parseFloat(bottlePrice)||0,effSize||0):parseFloat(costPerLiter)||0;
+  const derivedPiece=pieceMode==='pack'?((parseFloat(piecesPerPack)||0)>0?(parseFloat(packPrice)||0)/(parseFloat(piecesPerPack)||1):0):(parseFloat(costPerPiece)||0);
+  const submit=()=>{ if(!name.trim())return;
+    if(unit==='volume'){ if(priceMode==='bottle'&&(!bottlePrice||!effSize))return; if(priceMode==='liter'&&!costPerLiter)return;
+      onSave({ name:name.trim(), type, unit:'volume', priceMode, bottleSizeMl:priceMode==='bottle'?effSize:null, bottlePrice:priceMode==='bottle'?parseFloat(bottlePrice):null, costPerLiter:derivedL, stock:editing?.stock }, editing?.id);
+    } else { if(pieceMode==='each'&&!costPerPiece)return; if(pieceMode==='pack'&&(!packPrice||!piecesPerPack))return;
+      onSave({ name:name.trim(), type, unit:'piece', pieceMode, packPrice:pieceMode==='pack'?parseFloat(packPrice):null, piecesPerPack:pieceMode==='pack'?parseFloat(piecesPerPack):null, costPerPiece:derivedPiece, stock:editing?.stock }, editing?.id);
+    }
+    onClose(); };
+  return (
+    <Sheet open={open} onClose={onClose} title={editing?'Modifica Ingrediente':'Nuovo Ingrediente'} icon={<FlaskConical className="w-5 h-5 text-[#E31B23]" />}
+      footer={<button onClick={submit} className="w-full py-3.5 rounded-2xl text-[15px] font-semibold bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-[0.98] transition-all flex items-center justify-center gap-2" style={{minHeight:50}}><Check className="w-4 h-4" />{editing?'Salva Modifiche':'Aggiungi Ingrediente'}</button>}>
+      <div className="p-5 space-y-4">
+        <Field label="Nome"><input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Es. Gin Tanqueray / Cannuccia" className={inputCls} /></Field>
+        <Field label="Categoria">
+          <div className="grid grid-cols-3 gap-1.5">{INGREDIENT_TYPES.map(t=><button key={t} type="button" onClick={()=>setType(t)} className="px-2 py-2.5 rounded-xl text-xs font-medium transition-all" style={{background:type===t?'#E31B23':'rgba(244,244,240,0.05)',color:type===t?'#fff':'#A8A29E',minHeight:40}}>{INGREDIENT_TYPE_LABELS[t]}</button>)}</div>
+        </Field>
+        <Field label="Unità di misura"><Segmented value={unit} onChange={setUnit} options={[{value:'volume',label:'Volume (cl/ml)'},{value:'piece',label:'Pezzo'}]} /></Field>
+
+        {unit==='volume' ? (
+          <>
+            <Field label="Come vuoi indicare il prezzo?"><Segmented value={priceMode} onChange={setPriceMode} options={[{value:'bottle',label:'A bottiglia'},{value:'liter',label:'Al litro'}]} /></Field>
+            {priceMode==='bottle' ? (
+              <>
+                <Field label="Formato bottiglia (ml)">
+                  <div className="flex flex-wrap gap-1.5 mb-2">{BOTTLE_PRESETS.map(v=><button key={v} type="button" onClick={()=>{setBottleSizeMl(v);setCustomBottle('');}} className="px-3 py-1.5 rounded-full text-xs font-medium transition-all" style={{background:!customBottle&&bottleSizeMl===v?'#E31B23':'rgba(244,244,240,0.05)',color:!customBottle&&bottleSizeMl===v?'#fff':'#A8A29E'}}>{v} ml</button>)}</div>
+                  <input type="number" min="1" placeholder="Formato personalizzato (ml)" value={customBottle} onChange={e=>setCustomBottle(e.target.value)} className={`${inputCls} tabular-nums`} />
+                </Field>
+                <Field label="Prezzo della bottiglia (€)"><input type="number" min="0" step="0.01" value={bottlePrice} onChange={e=>setBottlePrice(e.target.value)} placeholder="12.90" className={`${inputCls} tabular-nums`} /></Field>
+                <div className="px-4 py-3 rounded-2xl bg-[#34D399]/[0.08] border border-[#34D399]/20 flex items-center justify-between"><span className="text-xs text-[#A8A29E]">Costo al litro calcolato</span><span className="text-sm font-semibold text-[#34D399] tabular-nums">€{derivedL.toFixed(2)}/L</span></div>
+              </>
+            ) : (
+              <Field label="Costo per Litro (€)"><input type="number" min="0" step="0.01" value={costPerLiter} onChange={e=>setCostPerLiter(e.target.value)} placeholder="18.50" className={`${inputCls} tabular-nums`} /></Field>
+            )}
+          </>
+        ) : (
+          <>
+            <Field label="Come vuoi indicare il prezzo?"><Segmented value={pieceMode} onChange={setPieceMode} options={[{value:'each',label:'Al pezzo'},{value:'pack',label:'A confezione'}]} /></Field>
+            {pieceMode==='each' ? (
+              <Field label="Costo al pezzo (€)"><input type="number" min="0" step="0.001" value={costPerPiece} onChange={e=>setCostPerPiece(e.target.value)} placeholder="0.08" className={`${inputCls} tabular-nums`} /></Field>
+            ) : (
+              <>
+                <Field label="Prezzo della confezione (€)"><input type="number" min="0" step="0.01" value={packPrice} onChange={e=>setPackPrice(e.target.value)} placeholder="3.50" className={`${inputCls} tabular-nums`} /></Field>
+                <Field label="Pezzi per confezione"><input type="number" min="1" step="1" value={piecesPerPack} onChange={e=>setPiecesPerPack(e.target.value)} placeholder="250" className={`${inputCls} tabular-nums`} /></Field>
+                <div className="px-4 py-3 rounded-2xl bg-[#34D399]/[0.08] border border-[#34D399]/20 flex items-center justify-between"><span className="text-xs text-[#A8A29E]">Costo al pezzo calcolato</span><span className="text-sm font-semibold text-[#34D399] tabular-nums">€{derivedPiece.toFixed(3)}/pz</span></div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+
+function CocktailEditorSheet({ open, onClose, store, editingCocktailId }) {
+  const { ingredients, cocktails, addIngredient, addCocktail, updateCocktail, settings } = store;
+  const editingCocktail=editingCocktailId?cocktails.find(c=>c.id===editingCocktailId):null;
+  const [name,setName]=useState(''); const [description,setDescription]=useState('');
+  const [profitMargin,setProfitMargin]=useState(settings.defaultProfitMargin); const [vatRate,setVatRate]=useState(settings.defaultVatRate);
+  const [showAdvanced,setShowAdvanced]=useState(false); const [draftItems,setDraftItems]=useState([]); const [search,setSearch]=useState(''); const [showNewIngredient,setShowNewIngredient]=useState(false);
+  useEffect(()=>{ if(!open)return;
+    if(editingCocktail){ setName(editingCocktail.name); setDescription(editingCocktail.description||''); setProfitMargin(editingCocktail.profitMargin); setVatRate(editingCocktail.vatRate); setDraftItems(editingCocktail.recipeItems.map(r=>({ingredientId:r.ingredientId,volumeCl:r.volumeCl,pieces:r.pieces}))); }
+    else { setName(''); setDescription(''); setProfitMargin(settings.defaultProfitMargin); setVatRate(settings.defaultVatRate); setDraftItems([]); }
+    setSearch(''); setShowAdvanced(false); setShowNewIngredient(false);
+  }, [open, editingCocktailId]);
+  const filteredIngredients=ingredients.filter(i=>i.name.toLowerCase().includes(search.toLowerCase()));
+  const addDraftItem=(id)=>{ const ing=ingredients.find(i=>i.id===id); const piece=isPiece(ing);
+    setDraftItems(items=>{ const ex=items.find(it=>it.ingredientId===id);
+      if(ex) return items.map(it=>it.ingredientId===id?(piece?{...it,pieces:(it.pieces||0)+1}:{...it,volumeCl:+((it.volumeCl||0)+1).toFixed(1)}):it);
+      return [...items, piece?{ingredientId:id,pieces:1}:{ingredientId:id,volumeCl:4.5}]; }); };
+  const stepDraft=(id,delta)=>{ const ing=ingredients.find(i=>i.id===id); const piece=isPiece(ing);
+    setDraftItems(items=>items.map(it=>it.ingredientId===id?(piece?{...it,pieces:Math.max(1,Math.round((it.pieces||0)+delta))}:{...it,volumeCl:Math.max(0.5,+((it.volumeCl||0)+delta).toFixed(1))}):it)); };
+  const removeDraft=(id)=>setDraftItems(items=>items.filter(it=>it.ingredientId!==id));
+  const handleNewIngredientSave=(payload)=>{ const newId=addIngredient(payload); addDraftItem(newId); };
+  const submit=()=>{ if(!name.trim())return; const recipeItems=draftItems.map(it=>{ const ing=ingredients.find(i=>i.id===it.ingredientId);
+      const base=isPiece(ing)?{ingredientId:it.ingredientId,pieces:it.pieces||0}:{ingredientId:it.ingredientId,volumeCl:it.volumeCl||0};
+      base.calculatedCost=itemCost(ing,base); return base; });
+    if(editingCocktail) updateCocktail(editingCocktail.id,{name:name.trim(),description:description.trim(),profitMargin,vatRate,recipeItems});
+    else addCocktail({name:name.trim(),description:description.trim(),profitMargin,vatRate,recipeItems}); onClose(); };
+  const totalCost=draftItems.reduce((sum,it)=>{ const ing=ingredients.find(i=>i.id===it.ingredientId); return sum+itemCost(ing,it); },0);
+  return (
+    <Sheet open={open} onClose={onClose} wide title={editingCocktail?'Modifica Drink':'Nuovo Drink'} icon={editingCocktail?<Pencil className="w-5 h-5 text-[#E31B23]" />:<Wine className="w-5 h-5 text-[#E31B23]" />}
+      footer={<button onClick={submit} disabled={!name.trim()} className="w-full py-3.5 rounded-2xl text-[15px] font-semibold bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100" style={{minHeight:50}}><Check className="w-4 h-4" />{editingCocktail?'Salva Modifiche':`Crea Drink${totalCost>0?` · €${totalCost.toFixed(2)} costo`:''}`}</button>}>
+      <div className="p-5 space-y-4">
+        <Field label="Nome del Drink"><input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Es. Negroni Sbagliato" className={inputCls} autoFocus /></Field>
+        <Field label={<>Descrizione <span className="text-[#A8A29E]/50">- opzionale</span></>}><textarea rows={2} value={description} onChange={e=>setDescription(e.target.value)} placeholder="Breve descrizione..." className={`${inputCls} resize-none`} /></Field>
+        <button onClick={()=>setShowAdvanced(v=>!v)} className="flex items-center gap-1.5 text-sm text-[#A8A29E] hover:text-[#F4F4F0] transition-colors"><SlidersHorizontal className="w-3.5 h-3.5" />Margine e IVA {showAdvanced?<ChevronUp className="w-3.5 h-3.5" />:<ChevronDown className="w-3.5 h-3.5" />}</button>
+        {showAdvanced && (
+          <div className="space-y-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="flex items-center justify-between"><span className="text-xs text-[#A8A29E]">Margine di guadagno</span><span className="text-sm font-semibold text-[#34D399] tabular-nums">{profitMargin}%</span></div>
+            <input type="range" min="0" max="500" step="5" value={profitMargin} onChange={e=>setProfitMargin(parseInt(e.target.value))} className="w-full" />
+            <div className="flex items-center justify-between pt-1"><span className="text-xs text-[#A8A29E]">Aliquota IVA</span><span className="text-sm font-semibold text-[#8B5CF6] tabular-nums">{vatRate}%</span></div>
+            <input type="range" min="0" max="50" step="1" value={vatRate} onChange={e=>setVatRate(parseInt(e.target.value))} className="w-full" />
+          </div>
+        )}
+        <div className="pt-1">
+          <p className="text-sm font-medium text-[#F4F4F0] mb-2 flex items-center gap-2"><ListPlus className="w-4 h-4 text-[#E31B23]" />Ingredienti</p>
+          {draftItems.length>0 && (
+            <div className="space-y-1.5 mb-3">
+              {draftItems.map(it=>{ const ing=ingredients.find(i=>i.id===it.ingredientId); if(!ing)return null; const cost=itemCost(ing,it); const piece=isPiece(ing);
+                return (
+                  <div key={it.ingredientId} className="flex items-center gap-2 p-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{backgroundColor:INGREDIENT_TYPE_COLORS[ing.type]}} />
+                    <span className="text-sm text-[#F4F4F0] flex-1 min-w-0 truncate">{ing.name}</span>
+                    <button onClick={()=>stepDraft(it.ingredientId,-stepSize(ing))} className="w-8 h-8 rounded-full bg-white/[0.08] text-[#F4F4F0] flex items-center justify-center active:scale-90 transition-transform shrink-0"><Minus className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs text-[#F4F4F0] tabular-nums w-12 text-center shrink-0">{piece?`${it.pieces||0}pz`:`${(it.volumeCl||0).toFixed(1)}cl`}</span>
+                    <button onClick={()=>stepDraft(it.ingredientId,stepSize(ing))} className="w-8 h-8 rounded-full bg-white/[0.08] text-[#F4F4F0] flex items-center justify-center active:scale-90 transition-transform shrink-0"><Plus className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs text-[#34D399] tabular-nums w-14 text-right shrink-0">€{cost.toFixed(2)}</span>
+                    <button onClick={()=>removeDraft(it.ingredientId)} className="w-8 h-8 rounded-full text-[#A8A29E] hover:text-[#E31B23] flex items-center justify-center transition-all shrink-0"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                ); })}
+            </div>
+          )}
+          <div className="relative mb-2">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A8A29E]" />
+            <input type="text" placeholder="Cerca tra i tuoi ingredienti..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full bg-white/[0.05] border border-white/[0.08] rounded-2xl pl-10 pr-4 py-3 text-sm text-[#F4F4F0] placeholder-[#A8A29E] focus:outline-none focus:border-[#E31B23] transition-all" />
+          </div>
+          <div className="max-h-52 overflow-y-auto space-y-1 rounded-2xl bg-white/[0.02] p-1.5 border border-white/[0.05]">
+            {filteredIngredients.map(ing=>{ const inDraft=draftItems.some(it=>it.ingredientId===ing.id);
+              return <IngredientRow key={ing.id} ing={ing} onTap={()=>addDraftItem(ing.id)} trailing={<div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{background:inDraft?'#34D399':'rgba(227,27,35,0.15)',color:inDraft?'#0D0D0D':'#E31B23'}}>{inDraft?<Check className="w-4 h-4" />:<Plus className="w-4 h-4" />}</div>} />; })}
+            {filteredIngredients.length===0 && <p className="text-center text-xs text-[#A8A29E] py-4">Nessun ingrediente trovato</p>}
+          </div>
+          <button onClick={()=>setShowNewIngredient(true)} className="w-full mt-2 py-3 rounded-2xl text-sm font-medium border border-dashed border-white/15 text-[#A8A29E] hover:text-[#F4F4F0] hover:border-[#E31B23]/40 transition-all flex items-center justify-center gap-2" style={{minHeight:46}}><Plus className="w-4 h-4" />Registra un nuovo ingrediente</button>
+        </div>
+      </div>
+      <IngredientSheet open={showNewIngredient} onClose={()=>setShowNewIngredient(false)} onSave={handleNewIngredientSave} editing={null} />
+    </Sheet>
+  );
+}
+
+function App() {
+  const store=useCocktailStore();
+  const { cocktails, selectedCocktailId, setSelectedCocktailId, addIngredient, updateIngredient, resetAll, syncStatus } = store;
+  const [activeTab,setActiveTab]=useState('builder');
+  const [ingredientSheetOpen,setIngredientSheetOpen]=useState(false); const [editingIngredient,setEditingIngredient]=useState(null);
+  const [cocktailSheetOpen,setCocktailSheetOpen]=useState(false); const [editingCocktailId,setEditingCocktailId]=useState(null);
+  useEffect(()=>{ if(!selectedCocktailId&&cocktails.length>0) setSelectedCocktailId(cocktails[0].id); }, [selectedCocktailId, cocktails, setSelectedCocktailId]);
+  const openNewCocktail=()=>{ setEditingCocktailId(null); setCocktailSheetOpen(true); };
+  const openEditCocktail=(id)=>{ setEditingCocktailId(id); setCocktailSheetOpen(true); };
+  const openNewIngredient=()=>{ setEditingIngredient(null); setIngredientSheetOpen(true); };
+  const openEditIngredient=(ing)=>{ setEditingIngredient(ing); setIngredientSheetOpen(true); };
+  const handleIngredientSave=(payload,id)=>{ if(id) updateIngredient(id,payload); else addIngredient(payload); };
+  const quickAdd=()=>{ if(activeTab==='inventory') openNewIngredient(); else openNewCocktail(); };
+  return (
+    <div className="min-h-screen bg-[#0D0D0D] text-[#F4F4F0] relative overflow-hidden">
+      <LiquidBackground />
+      <div className="fixed inset-0 pointer-events-none z-[1]" style={{backgroundImage:'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.003) 2px, rgba(255,255,255,0.003) 4px)'}} />
+      <TopNavigation onNewDrink={openNewCocktail} syncStatus={syncStatus} />
+      <div className="relative z-10 pt-20 lg:pt-24 pb-28 lg:pb-6 px-3 lg:px-6 min-h-screen">
+        <div className="hidden lg:grid grid-cols-12 gap-5 h-[calc(100vh-120px)]">
+          <div className="col-span-3 flex flex-col gap-4 h-full">
+            <div className="flex-1 min-h-0"><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
+            <div className="shrink-0"><CocktailList store={store} onNewCocktail={openNewCocktail} /></div>
+          </div>
+          <div className="col-span-5 h-full"><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>
+          <div className="col-span-4 h-full"><CostAnalysis store={store} /></div>
+        </div>
+        <div className="lg:hidden" style={{minHeight:'calc(100vh - 180px)'}}>
+          {activeTab==='inventory' && (
+            <div className="flex flex-col gap-4" style={{minHeight:'calc(100vh - 180px)'}}>
+              <div style={{height:'calc(100vh - 340px)',minHeight:320}}><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
+              <CocktailList store={store} onNewCocktail={openNewCocktail} />
+            </div>
+          )}
+          {activeTab==='builder' && <div style={{minHeight:'calc(100vh - 180px)'}}><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>}
+          {activeTab==='analysis' && <div style={{minHeight:'calc(100vh - 180px)'}}><CostAnalysis store={store} /></div>}
+        </div>
+      </div>
+      <BottomTabBar active={activeTab} onChange={setActiveTab} onQuickAdd={quickAdd} />
+      <IngredientSheet open={ingredientSheetOpen} onClose={()=>setIngredientSheetOpen(false)} onSave={handleIngredientSave} editing={editingIngredient} />
+      <CocktailEditorSheet open={cocktailSheetOpen} onClose={()=>setCocktailSheetOpen(false)} store={store} editingCocktailId={editingCocktailId} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+</script>
+</body>
+</html>
