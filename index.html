@@ -19,7 +19,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  html,body,#root { height:100%; }
+  html,body { height:100%; }
+  #root { min-height:100vh; min-height:100dvh; }
+  html,body { overflow-x:hidden; }
   body { margin:0; background:#0D0D0D; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   .font-editorial { font-family:'Playfair Display',serif; }
   .tabular-nums { font-variant-numeric:tabular-nums; }
@@ -756,7 +758,7 @@ function Sheet({ open, onClose, children, title, icon, footer, wide }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{backgroundColor:'rgba(0,0,0,0.6)',backdropFilter:'blur(2px)'}} onClick={onClose}>
-      <div className={`glass-surface-solid w-full ${wide?'sm:max-w-lg':'sm:max-w-md'} rounded-t-[28px] sm:rounded-[28px] overflow-hidden flex flex-col`} style={{maxHeight:'92vh'}} onClick={e=>e.stopPropagation()}>
+      <div className={`glass-surface-solid w-full ${wide?'sm:max-w-lg':'sm:max-w-md'} rounded-t-[28px] sm:rounded-[28px] overflow-hidden flex flex-col`} style={{maxHeight:'92dvh'}} onClick={e=>e.stopPropagation()}>
         <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0"><div className="w-9 h-1 rounded-full bg-white/20" /></div>
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06] shrink-0">
           <h3 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2">{icon}{title}</h3>
@@ -932,12 +934,12 @@ function App() {
   const handleIngredientSave=(payload,id)=>{ if(id) updateIngredient(id,payload); else addIngredient(payload); };
   const quickAdd=()=>{ if(activeTab==='inventory') openNewIngredient(); else openNewCocktail(); };
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#F4F4F0] relative overflow-hidden">
+    <div className="bg-[#0D0D0D] text-[#F4F4F0] relative overflow-x-hidden" style={{minHeight:'100dvh'}}>
       <LiquidBackground />
       <div className="fixed inset-0 pointer-events-none z-[1]" style={{backgroundImage:'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.003) 2px, rgba(255,255,255,0.003) 4px)'}} />
       <TopNavigation onNewDrink={openNewCocktail} syncStatus={syncStatus} />
-      <div className="relative z-10 pt-20 lg:pt-24 pb-28 lg:pb-6 px-3 lg:px-6 min-h-screen">
-        <div className="hidden lg:grid grid-cols-12 gap-5 h-[calc(100vh-120px)]">
+      <div className="relative z-10 pt-20 lg:pt-24 pb-28 lg:pb-6 px-3 lg:px-6" style={{minHeight:'100dvh'}}>
+        <div className="hidden lg:grid grid-cols-12 gap-5 h-[calc(100dvh-120px)]">
           <div className="col-span-3 flex flex-col gap-4 h-full">
             <div className="flex-1 min-h-0"><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
             <div className="shrink-0"><CocktailList store={store} onNewCocktail={openNewCocktail} /></div>
@@ -945,15 +947,15 @@ function App() {
           <div className="col-span-5 h-full"><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>
           <div className="col-span-4 h-full"><CostAnalysis store={store} /></div>
         </div>
-        <div className="lg:hidden" style={{minHeight:'calc(100vh - 180px)'}}>
+        <div className="lg:hidden" style={{minHeight:'calc(100dvh - 180px)'}}>
           {activeTab==='inventory' && (
-            <div className="flex flex-col gap-4" style={{minHeight:'calc(100vh - 180px)'}}>
-              <div style={{height:'calc(100vh - 340px)',minHeight:320}}><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
+            <div className="flex flex-col gap-4" style={{minHeight:'calc(100dvh - 180px)'}}>
+              <div style={{height:'calc(100dvh - 340px)',minHeight:280}}><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
               <CocktailList store={store} onNewCocktail={openNewCocktail} />
             </div>
           )}
-          {activeTab==='builder' && <div style={{minHeight:'calc(100vh - 180px)'}}><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>}
-          {activeTab==='analysis' && <div style={{minHeight:'calc(100vh - 180px)'}}><CostAnalysis store={store} /></div>}
+          {activeTab==='builder' && <div style={{minHeight:'calc(100dvh - 180px)'}}><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>}
+          {activeTab==='analysis' && <div style={{minHeight:'calc(100dvh - 180px)'}}><CostAnalysis store={store} /></div>}
         </div>
       </div>
       <BottomTabBar active={activeTab} onChange={setActiveTab} onQuickAdd={quickAdd} />
