@@ -22,6 +22,20 @@
   html,body { height:100%; }
   #root { min-height:100vh; min-height:100dvh; }
   html,body { overflow-x:hidden; }
+  :root {
+    --sat: env(safe-area-inset-top);
+    --sab: env(safe-area-inset-bottom);
+    --nav-h: 3.25rem;               /* compact top bar on mobile */
+    --content-top: calc(var(--nav-h) + var(--sat) + 0.4rem);
+    --content-bottom: calc(4.75rem + var(--sab));
+    --mobile-avail: calc(100dvh - var(--content-top) - var(--content-bottom));
+  }
+  /* Installed to home screen: guarantee the bar clears the status bar / notch
+     even if env(safe-area-inset-top) is reported as 0 */
+  @media (display-mode: standalone) {
+    :root { --sat: max(env(safe-area-inset-top), 44px); }
+  }
+  @media (min-width:1024px){ :root { --nav-h: 5rem; --content-bottom: 1.5rem; } }
   body { margin:0; background:#0D0D0D; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   .font-editorial { font-family:'Playfair Display',serif; }
   .tabular-nums { font-variant-numeric:tabular-nums; }
@@ -397,19 +411,21 @@ function TopNavigation({ onNewDrink, syncStatus }) {
   const [time,setTime]=useState('');
   useEffect(()=>{ const up=()=>setTime(new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})); up(); const i=setInterval(up,1000); return ()=>clearInterval(i); },[]);
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 lg:h-20 z-50 flex items-center justify-between px-4 lg:px-10"
-      style={{background:'linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, rgba(13,13,13,0.85) 65%, transparent 100%)'}}>
-      <div className="flex items-center gap-2.5 min-w-0">
-        <Wine className="w-6 h-6 lg:w-7 lg:h-7 text-[#E31B23] shrink-0" />
-        <h1 className="font-editorial text-lg lg:text-3xl italic text-[#F4F4F0] tracking-wide truncate">Drink Cost Dashboard</h1>
-      </div>
-      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
-        <SyncBadge status={syncStatus} />
-        <button onClick={onNewDrink} className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-95 transition-all duration-150">
-          <Plus className="w-4 h-4" /><span>Nuovo Drink</span>
-        </button>
-        <div className="hidden lg:flex items-center gap-1.5 text-[#A8A29E]">
-          <Clock className="w-4 h-4" /><span className="text-sm font-mono tabular-nums">{time}</span>
+    <nav className="fixed top-0 left-0 right-0 z-50"
+      style={{paddingTop:'var(--sat)', background:'linear-gradient(to bottom, rgba(13,13,13,0.96) 0%, rgba(13,13,13,0.88) 70%, transparent 100%)'}}>
+      <div className="flex items-center justify-between px-4 lg:px-10" style={{height:'var(--nav-h)'}}>
+        <div className="flex items-center gap-2 min-w-0">
+          <Wine className="w-5 h-5 lg:w-7 lg:h-7 text-[#E31B23] shrink-0" />
+          <h1 className="font-editorial text-base lg:text-3xl italic text-[#F4F4F0] tracking-wide truncate">Drink Cost</h1>
+        </div>
+        <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+          <SyncBadge status={syncStatus} />
+          <button onClick={onNewDrink} className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-[#E31B23] text-white hover:bg-[#c41820] active:scale-95 transition-all duration-150">
+            <Plus className="w-4 h-4" /><span>Nuovo Drink</span>
+          </button>
+          <div className="hidden lg:flex items-center gap-1.5 text-[#A8A29E]">
+            <Clock className="w-4 h-4" /><span className="text-sm font-mono tabular-nums">{time}</span>
+          </div>
         </div>
       </div>
     </nav>
@@ -938,8 +954,8 @@ function App() {
       <LiquidBackground />
       <div className="fixed inset-0 pointer-events-none z-[1]" style={{backgroundImage:'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.003) 2px, rgba(255,255,255,0.003) 4px)'}} />
       <TopNavigation onNewDrink={openNewCocktail} syncStatus={syncStatus} />
-      <div className="relative z-10 pt-20 lg:pt-24 pb-28 lg:pb-6 px-3 lg:px-6" style={{minHeight:'100dvh'}}>
-        <div className="hidden lg:grid grid-cols-12 gap-5 h-[calc(100dvh-120px)]">
+      <div className="relative z-10 px-3 lg:px-6" style={{minHeight:'100dvh', paddingTop:'var(--content-top)', paddingBottom:'var(--content-bottom)'}}>
+        <div className="hidden lg:grid grid-cols-12 gap-5" style={{height:'var(--mobile-avail)'}}>
           <div className="col-span-3 flex flex-col gap-4 h-full">
             <div className="flex-1 min-h-0"><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
             <div className="shrink-0"><CocktailList store={store} onNewCocktail={openNewCocktail} /></div>
@@ -947,15 +963,15 @@ function App() {
           <div className="col-span-5 h-full"><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>
           <div className="col-span-4 h-full"><CostAnalysis store={store} /></div>
         </div>
-        <div className="lg:hidden" style={{minHeight:'calc(100dvh - 180px)'}}>
+        <div className="lg:hidden" style={{minHeight:'var(--mobile-avail)'}}>
           {activeTab==='inventory' && (
-            <div className="flex flex-col gap-4" style={{minHeight:'calc(100dvh - 180px)'}}>
-              <div style={{height:'calc(100dvh - 340px)',minHeight:280}}><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
+            <div className="flex flex-col gap-4" style={{minHeight:'var(--mobile-avail)'}}>
+              <div style={{height:'calc(var(--mobile-avail) - 160px)',minHeight:240}}><IngredientPanel store={store} onAddIngredient={openNewIngredient} onEditIngredient={openEditIngredient} /></div>
               <CocktailList store={store} onNewCocktail={openNewCocktail} />
             </div>
           )}
-          {activeTab==='builder' && <div style={{minHeight:'calc(100dvh - 180px)'}}><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>}
-          {activeTab==='analysis' && <div style={{minHeight:'calc(100dvh - 180px)'}}><CostAnalysis store={store} /></div>}
+          {activeTab==='builder' && <div style={{minHeight:'var(--mobile-avail)'}}><CocktailBuilder store={store} onNewCocktail={openNewCocktail} onEditCocktail={openEditCocktail} /></div>}
+          {activeTab==='analysis' && <div style={{minHeight:'var(--mobile-avail)'}}><CostAnalysis store={store} /></div>}
         </div>
       </div>
       <BottomTabBar active={activeTab} onChange={setActiveTab} onQuickAdd={quickAdd} />
