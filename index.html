@@ -30,6 +30,11 @@
     --content-bottom: calc(4.75rem + var(--sab));
     --mobile-avail: calc(100dvh - var(--content-top) - var(--content-bottom));
   }
+  /* Installed to home screen: guarantee the bar clears the status bar / notch
+     even if env(safe-area-inset-top) is reported as 0 */
+  @media (display-mode: standalone) {
+    :root { --sat: max(env(safe-area-inset-top), 44px); }
+  }
   @media (min-width:1024px){ :root { --nav-h: 5rem; --content-bottom: 1.5rem; } }
   body { margin:0; background:#0D0D0D; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   .font-editorial { font-family:'Playfair Display',serif; }
